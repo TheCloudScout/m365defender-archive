@@ -1,0 +1,75 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "connections_azureblob_name": {
+            "value": null
+        },
+        "workspaces_m365_archive_name": {
+            "value": null
+        },
+        "storageAccounts_sqndefender365archive_name": {
+            "value": null
+        },
+        "workflows_Send_Defender365_data_to_Sentinel_name": {
+            "value": null
+        },
+        "dataCollectionEndpoints_dce_m365_archive_basic_logs_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_alertinfo_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_deviceinfo_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_emailevents_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_deviceevents_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_emailurlinfo_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_alertevidence_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_cloudappevents_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_devicefileevents_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_devicelogonevents_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_devicenetworkinfo_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_devicenetworkevents_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_deviceprocessevents_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_emailattachmentinfo_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_identitylogonevents_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_deviceregistryevents_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_deviceimageloadevents_name": {
+            "value": null
+        },
+        "integrationAccounts_integration_account_send_defender365_data_to_Sentinel_name": {
+            "value": null
+        },
+        "dataCollectionRules_dcr_m365_archive_basic_logs_devicefilecertificateinfo_name": {
+            "value": null
+        }
+    }
+}
