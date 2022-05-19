@@ -2,132 +2,37 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "connections_azureblob_name": {
-            "defaultValue": "azureblob",
+        "solutionName": {
+            "defaultValue": "m365defender-archive",
             "type": "String"
         },
-        "workspaces_m365_archive_name": {
-            "defaultValue": "m365-archive",
+        "storageAccountName": {
+            "defaultValue": "storagem365darchive",
             "type": "String"
         },
-        "storageAccounts_sqndefender365archive_name": {
-            "defaultValue": "sqndefender365archive",
-            "type": "String"
-        },
-        "workflows_Send_Defender365_data_to_Sentinel_name": {
-            "defaultValue": "Send-Defender365-data-to-Sentinel",
-            "type": "String"
-        },
-        "dataCollectionEndpoints_dce_m365_archive_basic_logs_name": {
-            "defaultValue": "dce-m365-archive-basic-logs",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_alertinfo_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-alertinfo",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_deviceinfo_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-deviceinfo",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_emailevents_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-emailevents",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_deviceevents_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-deviceevents",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_emailurlinfo_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-emailurlinfo",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_alertevidence_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-alertevidence",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_cloudappevents_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-cloudappevents",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_devicefileevents_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-devicefileevents",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_devicelogonevents_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-devicelogonevents",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_devicenetworkinfo_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-devicenetworkinfo",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_devicenetworkevents_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-devicenetworkevents",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_deviceprocessevents_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-deviceprocessevents",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_emailattachmentinfo_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-emailattachmentinfo",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_identitylogonevents_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-identitylogonevents",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_deviceregistryevents_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-deviceregistryevents",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_deviceimageloadevents_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-deviceimageloadevents",
-            "type": "String"
-        },
-        "integrationAccounts_integration_account_send_defender365_data_to_Sentinel_name": {
-            "defaultValue": "integration-account-send-defender365-data-to-Sentinel",
-            "type": "String"
-        },
-        "dataCollectionRules_dcr_m365_archive_basic_logs_devicefilecertificateinfo_name": {
-            "defaultValue": "dcr-m365-archive-basic-logs-devicefilecertificateinfo",
-            "type": "String"
+        "roleDefinitions": {
+            "type": "array",
+            "defaultValue": [
+                "3913510d-42f4-4e42-8a64-420c390055eb", // Monitoring Metrics Publisher
+                "ba92f5b4-2d11-453d-a403-e96b0029c9fe" // Storage Blob Data Contributor
+            ]
         }
     },
-    "variables": {},
+    "variables": {
+        "workspaceName": "[concat('workspace-', parameters('solutionName'))]",
+        "integrationAccountName": "[concat('integration-account-', parameters('solutionName'))]",
+        "dataCollectionEndpointName": "[concat('dce-', parameters('solutionName'))]",
+        "dataCollectionRulePrefix": "[concat('dcr-', parameters('solutionName'), '-')]",
+        "uniqueDestinationString": "[substring(concat(uniqueString(string(subscription().subscriptionId)), uniqueString(parameters('solutionName')), uniqueString(variables('dataCollectionEndpointName'))), 0, 32)]",     
+        "logicAppName": "[concat('logicapp-', parameters('solutionName'))]",
+        "logicAppConnectionName": "[concat('api-connection-', parameters('solutionName'), '-azureblob')]"
+    },
     "resources": [
-        {
-            "type": "Microsoft.Insights/dataCollectionEndpoints",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionEndpoints_dce_m365_archive_basic_logs_name')]",
-            "location": "westeurope",
-            "properties": {
-                "immutableId": "dce-7dfe1310af88456a8a1cf7b895e9b74a",
-                "configurationAccess": {},
-                "logsIngestion": {},
-                "networkAcls": {
-                    "publicNetworkAccess": "Enabled"
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Logic/integrationAccounts",
-            "apiVersion": "2016-06-01",
-            "name": "[parameters('integrationAccounts_integration_account_send_defender365_data_to_Sentinel_name')]",
-            "location": "westeurope",
-            "sku": {
-                "name": "Free"
-            },
-            "properties": {
-                "state": "Enabled"
-            }
-        },
         {
             "type": "microsoft.operationalinsights/workspaces",
             "apiVersion": "2021-12-01-preview",
-            "name": "[parameters('workspaces_m365_archive_name')]",
-            "location": "westeurope",
+            "name": "[variables('workspaceName')]",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "sku": {
                     "name": "pergb2018"
@@ -144,597 +49,13 @@
             }
         },
         {
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2021-09-01",
-            "name": "[parameters('storageAccounts_sqndefender365archive_name')]",
-            "location": "westeurope",
-            "sku": {
-                "name": "Standard_LRS",
-                "tier": "Standard"
-            },
-            "kind": "StorageV2",
-            "properties": {
-                "defaultToOAuthAuthentication": false,
-                "allowCrossTenantReplication": true,
-                "minimumTlsVersion": "TLS1_2",
-                "allowBlobPublicAccess": true,
-                "allowSharedKeyAccess": true,
-                "networkAcls": {
-                    "bypass": "AzureServices",
-                    "virtualNetworkRules": [],
-                    "ipRules": [],
-                    "defaultAction": "Allow"
-                },
-                "supportsHttpsTrafficOnly": true,
-                "encryption": {
-                    "requireInfrastructureEncryption": false,
-                    "services": {
-                        "file": {
-                            "keyType": "Account",
-                            "enabled": true
-                        },
-                        "blob": {
-                            "keyType": "Account",
-                            "enabled": true
-                        }
-                    },
-                    "keySource": "Microsoft.Storage"
-                },
-                "accessTier": "Hot"
-            }
-        },
-        {
-            "type": "Microsoft.Web/connections",
-            "apiVersion": "2016-06-01",
-            "name": "[parameters('connections_azureblob_name')]",
-            "location": "westeurope",
-            "kind": "V1",
-            "properties": {
-                "displayName": "sqndefender365archive",
-                "statuses": [
-                    {
-                        "status": "Ready"
-                    }
-                ],
-                "customParameterValues": {},
-                "createdTime": "2022-03-15T15:11:27.0121469Z",
-                "changedTime": "2022-03-15T15:11:29.0956222Z",
-                "api": {
-                    "name": "[parameters('connections_azureblob_name')]",
-                    "displayName": "Azure Blob Storage",
-                    "description": "Microsoft Azure Storage provides a massively scalable, durable, and highly available storage for data on the cloud, and serves as the data storage solution for modern applications. Connect to Blob Storage to perform various operations such as create, update, get and delete on blobs in your Azure Storage account.",
-                    "iconUri": "[concat('https://connectoricons-prod.azureedge.net/releases/v1.0.1563/1.0.1563.2732/', parameters('connections_azureblob_name'), '/icon.png')]",
-                    "brandColor": "#804998",
-                    "id": "[concat('/subscriptions/b4824877-0da7-4d92-80e5-e186f01b0653/providers/Microsoft.Web/locations/westeurope/managedApis/', parameters('connections_azureblob_name'))]",
-                    "type": "Microsoft.Web/locations/managedApis"
-                },
-                "testLinks": [
-                    {
-                        "requestUri": "[concat('https://management.azure.com:443/subscriptions/b4824877-0da7-4d92-80e5-e186f01b0653/resourceGroups/RG-Defender-archive-test/providers/Microsoft.Web/connections/', parameters('connections_azureblob_name'), '/extensions/proxy/testconnection?api-version=2016-06-01')]",
-                        "method": "get"
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_alertevidence_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-alertevidence_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_alertinfo_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-alertinfo_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_cloudappevents_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-cloudappevents_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_deviceevents_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-deviceevents_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_devicefilecertificateinfo_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-devicefilecertificateinfo_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_devicefileevents_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-devicefileevents_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_deviceimageloadevents_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-deviceimageloadevents_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_deviceinfo_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-deviceinfo_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_devicelogonevents_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-devicelogonevents_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_devicenetworkevents_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-devicenetworkevents_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_devicenetworkinfo_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-devicenetworkinfo_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_deviceprocessevents_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-deviceprocessevents_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_deviceregistryevents_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-deviceregistryevents_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_emailattachmentinfo_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-emailattachmentinfo_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_emailevents_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-emailevents_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_emailurlinfo_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-emailurlinfo_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
-            "name": "[parameters('dataCollectionRules_dcr_m365_archive_basic_logs_identitylogonevents_name')]",
-            "location": "westeurope",
-            "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]"
-            ],
-            "properties": {
-                "dataSources": {},
-                "destinations": {
-                    "logAnalytics": [
-                        {
-                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('workspaces_m365_archive_name'))]",
-                            "name": "fd473e3878a948a3822dbcb23a13892f"
-                        }
-                    ]
-                },
-                "dataFlows": [
-                    {
-                        "streams": [
-                            "Custom-identitylogonevents_archive_CL"
-                        ],
-                        "destinations": [
-                            "fd473e3878a948a3822dbcb23a13892f"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/alertevidence_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/alertevidence_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "alertevidence_archive_CL",
@@ -876,19 +197,17 @@
                             "type": "datetime"
                         }
                     ]
-                },
-                "retentionInDays": 8
+                }
             }
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/alertinfo_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/alertinfo_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "alertinfo_archive_CL",
@@ -934,19 +253,17 @@
                             "type": "datetime"
                         }
                     ]
-                },
-                "retentionInDays": 8
+                }
             }
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/cloudappevents_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/cloudappevents_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "cloudappevents_archive_CL",
@@ -1080,19 +397,17 @@
                             "type": "datetime"
                         }
                     ]
-                },
-                "retentionInDays": 8
+                }
             }
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/deviceevents_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/deviceevents_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "deviceevents_archive_CL",
@@ -1330,19 +645,17 @@
                             "type": "datetime"
                         }
                     ]
-                },
-                "retentionInDays": 8
+                }
             }
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/devicefilecertificateinfo_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/devicefilecertificateinfo_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "devicefilecertificateinfo_archive_CL",
@@ -1428,19 +741,17 @@
                             "type": "datetime"
                         }
                     ]
-                },
-                "retentionInDays": 8
+                }
             }
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/devicefileevents_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/devicefileevents_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "devicefileevents_archive_CL",
@@ -1666,19 +977,17 @@
                             "type": "datetime"
                         }
                     ]
-                },
-                "retentionInDays": 8
+                }
             }
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/deviceimageloadevents_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/deviceimageloadevents_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "deviceimageloadevents_archive_CL",
@@ -1840,19 +1149,17 @@
                             "type": "datetime"
                         }
                     ]
-                },
-                "retentionInDays": 8
+                }
             }
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/deviceinfo_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/deviceinfo_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "deviceinfo_archive_CL",
@@ -1938,19 +1245,17 @@
                             "type": "datetime"
                         }
                     ]
-                },
-                "retentionInDays": 8
+                }
             }
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/devicelogonevents_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/devicelogonevents_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "devicelogonevents_archive_CL",
@@ -2140,19 +1445,17 @@
                             "type": "datetime"
                         }
                     ]
-                },
-                "retentionInDays": 8
+                }
             }
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/devicenetworkevents_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/devicenetworkevents_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "devicenetworkevents_archive_CL",
@@ -2326,19 +1629,17 @@
                             "type": "datetime"
                         }
                     ]
-                },
-                "retentionInDays": 8
+                }
             }
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/devicenetworkinfo_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/devicenetworkinfo_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "devicenetworkinfo_archive_CL",
@@ -2412,19 +1713,17 @@
                             "type": "datetime"
                         }
                     ]
-                },
-                "retentionInDays": 8
+                }
             }
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/deviceprocessevents_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/deviceprocessevents_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "deviceprocessevents_archive_CL",
@@ -2670,19 +1969,17 @@
                             "type": "datetime"
                         }
                     ]
-                },
-                "retentionInDays": 8
+                }
             }
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/deviceregistryevents_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/deviceregistryevents_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "deviceregistryevents_archive_CL",
@@ -2848,19 +2145,17 @@
                             "type": "datetime"
                         }
                     ]
-                },
-                "retentionInDays": 8
+                }
             }
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/emailattachmentinfo_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/emailattachmentinfo_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "emailattachmentinfo_archive_CL",
@@ -2930,19 +2225,17 @@
                             "type": "datetime"
                         }
                     ]
-                },
-                "retentionInDays": 8
+                }
             }
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/emailevents_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/emailevents_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "emailevents_archive_CL",
@@ -3096,19 +2389,17 @@
                             "type": "datetime"
                         }
                     ]
-                },
-                "retentionInDays": 8
+                }
             }
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/emailurlinfo_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/emailurlinfo_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "emailurlinfo_archive_CL",
@@ -3142,19 +2433,17 @@
                             "type": "datetime"
                         }
                     ]
-                },
-                "retentionInDays": 8
+                }
             }
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces/tables",
             "apiVersion": "2021-12-01-preview",
-            "name": "[concat(parameters('workspaces_m365_archive_name'), '/identitylogonevents_archive_CL')]",
+            "name": "[concat(variables('workspaceName'), '/identitylogonevents_archive_CL')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaces_m365_archive_name'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
             ],
             "properties": {
-                "totalRetentionInDays": 8,
                 "plan": "Basic",
                 "schema": {
                     "name": "identitylogonevents_archive_CL",
@@ -3268,16 +2557,56 @@
                             "type": "datetime"
                         }
                     ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-09-01",
+            "name": "[parameters('storageAccountName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "defaultToOAuthAuthentication": false,
+                "allowCrossTenantReplication": true,
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": false,
+                "allowSharedKeyAccess": true,
+                "networkAcls": {
+                    "resourceAccessRules": [],
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Deny"
                 },
-                "retentionInDays": 8
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "requireInfrastructureEncryption": false,
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
             }
         },
         {
             "type": "Microsoft.Storage/storageAccounts/blobServices",
             "apiVersion": "2021-09-01",
-            "name": "[concat(parameters('storageAccounts_sqndefender365archive_name'), '/default')]",
+            "name": "[concat(parameters('storageAccountName'), '/default')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_sqndefender365archive_name'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
             ],
             "sku": {
                 "name": "Standard_LRS",
@@ -3306,13 +2635,620 @@
             }
         },
         {
+            "type": "Microsoft.Insights/dataCollectionEndpoints",
+            "apiVersion": "2021-04-01",
+            "name": "[variables('dataCollectionEndpointName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "immutableId": "dce-7dfe1310af88456a8a1cf7b895e9b74a",
+                "configurationAccess": {},
+                "logsIngestion": {},
+                "networkAcls": {
+                    "publicNetworkAccess": "Enabled"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'alertevidence')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-alertevidence_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-alertevidence_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'alertinfo')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-alertinfo_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-alertinfo_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'cloudappevents')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-cloudappevents_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-cloudappevents_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'deviceevents')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-deviceevents_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-deviceevents_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'devicefilecertificateinfo')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-devicefilecertificateinfo_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-devicefilecertificateinfo_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'devicefileevents')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-devicefileevents_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-devicefileevents_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'deviceimageloadevents')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-deviceimageloadevents_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-deviceimageloadevents_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'deviceinfo')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-deviceinfo_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-deviceinfo_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'devicelogonevents')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-devicelogonevents_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-devicelogonevents_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'devicenetworkevents')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-devicenetworkevents_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-devicenetworkevents_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'devicenetworkinfo')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-devicenetworkinfo_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-devicenetworkinfo_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'deviceprocessevents')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-deviceprocessevents_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-deviceprocessevents_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'deviceregistryevents')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-deviceregistryevents_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-deviceregistryevents_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'emailattachmentinfo')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-emailattachmentinfo_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-emailattachmentinfo_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'emailevents')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-emailevents_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-emailevents_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'emailurlinfo')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-emailurlinfo_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-emailurlinfo_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/dataCollectionRules",
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('dataCollectionRulePrefix'), 'identitylogonevents')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "dataSources": {},
+                "destinations": {
+                    "logAnalytics": [
+                        {
+                            "workspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                            "name": "[variables('uniqueDestinationString')]"
+                        }
+                    ]
+                },
+                "dataFlows": [
+                    {
+                        "streams": [
+                            "Custom-identitylogonevents_archive_CL"
+                        ],
+                        "destinations": [
+                            "[variables('uniqueDestinationString')]"
+                        ],
+                        "transformKql": "source | extend TimeGenerated = now()",
+                        "outputStream": "Custom-identitylogonevents_archive_CL"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Logic/integrationAccounts",
+            "apiVersion": "2016-06-01",
+            "name": "[variables('integrationAccountName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Free"
+            },
+            "properties": {
+                "state": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2018-07-01-preview",
+            "name": "[variables('logicAppConnectionName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "V1",
+            "properties": {
+                "alternativeParameterValues": {},
+                "api": {
+                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/azureblob')]"
+                },
+                "customParameterValues": {},
+                "displayName": "[variables('logicAppConnectionName')]",
+                "parameterValueSet": {
+                    "name": "managedIdentityAuth",
+                    "values": {}
+                }
+            }
+        },
+        {
             "type": "Microsoft.Logic/workflows",
             "apiVersion": "2017-07-01",
-            "name": "[parameters('workflows_Send_Defender365_data_to_Sentinel_name')]",
-            "location": "westeurope",
+            "name": "[variables('logicAppName')]",
+            "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Logic/integrationAccounts', parameters('integrationAccounts_integration_account_send_defender365_data_to_Sentinel_name'))]",
-                "[resourceId('Microsoft.Web/connections', parameters('connections_azureblob_name'))]"
+                "[resourceId('Microsoft.Logic/integrationAccounts', variables('integrationAccountName'))]",
+                "[resourceId('Microsoft.Web/connections', variables('logicAppConnectionName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'alertevidence'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'alertinfo'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'cloudappevents'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'deviceevents'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'devicefilecertificateinfo'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'devicefileevents'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'deviceimageloadevents'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'deviceinfo'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'devicelogonevents'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'devicenetworkevents'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'devicenetworkinfo'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'deviceprocessevents'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'deviceregistryevents'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'emailattachmentinfo'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'emailevents'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'emailurlinfo'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'identitylogonevents'))]"
             ],
             "identity": {
                 "type": "SystemAssigned"
@@ -3320,70 +3256,41 @@
             "properties": {
                 "state": "Enabled",
                 "integrationAccount": {
-                    "id": "[resourceId('Microsoft.Logic/integrationAccounts', parameters('integrationAccounts_integration_account_send_defender365_data_to_Sentinel_name'))]"
+                    "id": "[resourceId('Microsoft.Logic/integrationAccounts', variables('integrationAccountName'))]"
                 },
                 "definition": {
                     "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
-                    "contentVersion": "1.0.0.0",
-                    "parameters": {
-                        "$connections": {
-                            "defaultValue": {},
-                            "type": "Object"
-                        }
-                    },
-                    "triggers": {
-                        "Daily_at_01:00_UTC+1": {
-                            "recurrence": {
-                                "frequency": "Day",
-                                "interval": 1,
-                                "startTime": "2022-03-21T01:00:00Z",
-                                "timeZone": "W. Europe Standard Time"
-                            },
-                            "evaluatedRecurrence": {
-                                "frequency": "Day",
-                                "interval": 1,
-                                "startTime": "2022-03-21T01:00:00Z",
-                                "timeZone": "W. Europe Standard Time"
-                            },
-                            "type": "Recurrence"
-                        }
-                    },
                     "actions": {
                         "For_each_blob_root_folder": {
-                            "foreach": "@body('Lists_blobs_in_the_root_folder')?['value']",
                             "actions": {
                                 "Compose_custom_log_table_name": {
+                                    "inputs": "@concat(split(items('For_each_blob_root_folder')?['Name'],'-')[3],variables('customTableSuffix'))",
                                     "runAfter": {},
-                                    "type": "Compose",
-                                    "inputs": "@concat(split(items('For_each_blob_root_folder')?['Name'],'-')[3],variables('customTableSuffix'))"
+                                    "type": "Compose"
                                 },
                                 "Compose_full_dcrName": {
+                                    "inputs": "@concat('dcr-', variables('dcrPrefix'), '-', split(items('For_each_blob_root_folder')?['Name'],'-')[3])",
                                     "runAfter": {
                                         "Compose_custom_log_table_name": [
                                             "Succeeded"
                                         ]
                                     },
-                                    "type": "Compose",
-                                    "inputs": "@concat('dcr-m365-archive-basic-logs-',split(items('For_each_blob_root_folder')?['Name'],'-')[3])"
+                                    "type": "Compose"
                                 },
                                 "For_each_hourly_sub-container": {
-                                    "foreach": "@body('Lists_blob_sub-containers_(hourly_folders)')?['value']",
                                     "actions": {
                                         "Compose_body_by_fixing_JSON_structure": {
+                                            "inputs": "@{concat('[',replace(string(body('Get_blob_contents')),'\r\n{',',{'),']')}",
                                             "runAfter": {
                                                 "Get_blob_contents": [
                                                     "Succeeded"
                                                 ]
                                             },
-                                            "type": "Compose",
-                                            "inputs": "@{concat('[',replace(string(body('Get_blob_contents')),'\r\n{',',{'),']')}"
+                                            "type": "Compose"
                                         },
                                         "For_each_data_element": {
-                                            "foreach": "@body('Parse_string_into_JSON_array_so_that_only_''properties''_can_be_processed')",
                                             "actions": {
                                                 "Post_logfile_to_Data_Collection_Endpoint": {
-                                                    "runAfter": {},
-                                                    "type": "Http",
                                                     "inputs": {
                                                         "authentication": {
                                                             "audience": "https://monitor.azure.com/",
@@ -3397,9 +3304,12 @@
                                                         },
                                                         "method": "POST",
                                                         "uri": "@{variables('dceUri')}/dataCollectionRules/@{body('Retrieve_respective_dcrImmutableId')}/streams/Custom-@{outputs('Compose_custom_log_table_name')}?api-version=2021-11-01-preview"
-                                                    }
+                                                    },
+                                                    "runAfter": {},
+                                                    "type": "Http"
                                                 }
                                             },
+                                            "foreach": "@body('Parse_string_into_JSON_array_so_that_only_''properties''_can_be_processed')",
                                             "runAfter": {
                                                 "Parse_string_into_JSON_array_so_that_only_'properties'_can_be_processed": [
                                                     "Succeeded"
@@ -3408,8 +3318,6 @@
                                             "type": "Foreach"
                                         },
                                         "Get_blob_contents": {
-                                            "runAfter": {},
-                                            "type": "ApiConnection",
                                             "inputs": {
                                                 "host": {
                                                     "connection": {
@@ -3417,21 +3325,17 @@
                                                     }
                                                 },
                                                 "method": "get",
-                                                "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('sqndefender365archive'))}/GetFileContentByPath",
+                                                "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent(variables('storageAccountName')))}/GetFileContentByPath",
                                                 "queries": {
                                                     "inferContentType": true,
                                                     "path": "/@{items('For_each_blob_root_folder')?['Name']}/tenantId=@{variables('tenantId')}/y=@{variables('year')}/m=@{variables('month')}/d=@{variables('day')}/@{items('For_each_hourly_sub-container')?['Name']}m=00/PT1H.json",
                                                     "queryParametersSingleEncoded": true
                                                 }
-                                            }
+                                            },
+                                            "runAfter": {},
+                                            "type": "ApiConnection"
                                         },
                                         "Parse_string_into_JSON_array_so_that_only_'properties'_can_be_processed": {
-                                            "runAfter": {
-                                                "Compose_body_by_fixing_JSON_structure": [
-                                                    "Succeeded"
-                                                ]
-                                            },
-                                            "type": "ParseJson",
                                             "inputs": {
                                                 "content": "@outputs('Compose_body_by_fixing_JSON_structure')",
                                                 "schema": {
@@ -3445,9 +3349,16 @@
                                                     },
                                                     "type": "array"
                                                 }
-                                            }
+                                            },
+                                            "runAfter": {
+                                                "Compose_body_by_fixing_JSON_structure": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "ParseJson"
                                         }
                                     },
+                                    "foreach": "@body('Lists_blob_sub-containers_(hourly_folders)')?['value']",
                                     "runAfter": {
                                         "Lists_blob_sub-containers_(hourly_folders)": [
                                             "Succeeded"
@@ -3456,12 +3367,6 @@
                                     "type": "Foreach"
                                 },
                                 "Lists_blob_sub-containers_(hourly_folders)": {
-                                    "runAfter": {
-                                        "Retrieve_respective_dcrImmutableId": [
-                                            "Succeeded"
-                                        ]
-                                    },
-                                    "type": "ApiConnection",
                                     "inputs": {
                                         "host": {
                                             "connection": {
@@ -3469,25 +3374,32 @@
                                             }
                                         },
                                         "method": "get",
-                                        "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('sqndefender365archive'))}/foldersV2/@{encodeURIComponent(encodeURIComponent('/',items('For_each_blob_root_folder')?['Name'],'/tenantId=',variables('tenantId'),'/y=',variables('year'),'/m=',variables('month'),'/d=',variables('day')))}",
+                                        "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent(variables('storageAccountName')))}/foldersV2/@{encodeURIComponent(encodeURIComponent('/',items('For_each_blob_root_folder')?['Name'],'/tenantId=',variables('tenantId'),'/y=',variables('year'),'/m=',variables('month'),'/d=',variables('day')))}",
                                         "queries": {
                                             "nextPageMarker": "",
                                             "useFlatListing": false
                                         }
-                                    }
+                                    },
+                                    "runAfter": {
+                                        "Retrieve_respective_dcrImmutableId": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "ApiConnection"
                                 },
                                 "Retrieve_respective_dcrImmutableId": {
+                                    "inputs": {
+                                        "code": "var content = workflowContext.actions.Parse_dataCollectionRules.outputs.body.content;\r\n\r\nvar dcrName = \"\" + workflowContext.actions.Compose_full_dcrName.outputs;\r\n\r\nvar result = \"\";\r\n\r\ncontent.forEach(item=>{\r\n    if(item.dcrName == dcrName){\r\n        result = item.dcrImmutableId;\r\n    }\r\n});\r\n\r\nreturn result;"
+                                    },
                                     "runAfter": {
                                         "Compose_full_dcrName": [
                                             "Succeeded"
                                         ]
                                     },
-                                    "type": "JavaScriptCode",
-                                    "inputs": {
-                                        "code": "var content = workflowContext.actions.Parse_dataCollectionRules.outputs.body.content;\r\n\r\nvar dcrName = \"\" + workflowContext.actions.Compose_full_dcrName.outputs;\r\n\r\nvar result = \"\";\r\n\r\ncontent.forEach(item=>{\r\n    if(item.dcrName == dcrName){\r\n        result = item.dcrImmutableId;\r\n    }\r\n});\r\n\r\nreturn result;"
-                                    }
+                                    "type": "JavaScriptCode"
                                 }
                             },
+                            "foreach": "@body('Lists_blobs_in_the_root_folder')?['value']",
                             "runAfter": {
                                 "Lists_blobs_in_the_root_folder": [
                                     "Succeeded"
@@ -3496,12 +3408,6 @@
                             "type": "Foreach"
                         },
                         "Initialize_'customTableSuffix'_variable": {
-                            "runAfter": {
-                                "Initialize_'dceUri'_variable": [
-                                    "Succeeded"
-                                ]
-                            },
-                            "type": "InitializeVariable",
                             "inputs": {
                                 "variables": [
                                     {
@@ -3510,32 +3416,32 @@
                                         "value": "_archive_CL"
                                     }
                                 ]
-                            }
-                        },
-                        "Initialize_'dataCollectionRules'_variable": {
+                            },
                             "runAfter": {
-                                "Initialize_'customTableSuffix'_variable": [
+                                "Initialize_'dcrPrefix'_variable": [
                                     "Succeeded"
                                 ]
                             },
-                            "type": "InitializeVariable",
+                            "type": "InitializeVariable"
+                        },
+                        "Initialize_'dataCollectionRules'_variable": {
                             "inputs": {
                                 "variables": [
                                     {
                                         "name": "dataCollectionRules",
                                         "type": "string",
-                                        "value": "{\n    \"content\": [\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-alertevidence\",\n            \"dcrImmutableId\": \"dcr-eb687de6777249729c90e208d908bc9f\"\n        },\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-alertinfo\",\n            \"dcrImmutableId\": \"dcr-190b7380726e49d58691b2e1eaaed795\"\n        },\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-cloudappevents\",\n            \"dcrImmutableId\": \"dcr-ff22f5db896648babd803cdf51fd66c3\"\n        },\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-deviceevents\",\n            \"dcrImmutableId\": \"dcr-a91d0bf8793d4980ad4d84696daa366c\"\n        },\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-devicefilecertificateinfo\",\n            \"dcrImmutableId\": \"dcr-c7db50ac15c94ba1ad26c04dbf7819b8\"\n        },\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-devicefileevents\",\n            \"dcrImmutableId\": \"dcr-89e8d8434567401ab18c3f3f989694eb\"\n        },\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-deviceimageloadevents\",\n            \"dcrImmutableId\": \"dcr-0159a433fd77496eb6726b6a746c3f65\"\n        },\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-deviceinfo\",\n            \"dcrImmutableId\": \"dcr-ed37a1d1bea34789aa91640deb9f1a75\"\n        },\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-devicelogonevents\",\n            \"dcrImmutableId\": \"dcr-e546639ea7df4fda8ed43edc75abba7d\"\n        },\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-devicenetworkevents\",\n            \"dcrImmutableId\": \"dcr-cb9b5e740c704552ac2dc0a7aaf07d29\"\n        },\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-devicenetworkinfo\",\n            \"dcrImmutableId\": \"dcr-4a9442f861744e26ad34a91a00c0cf12\"\n        },\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-deviceprocessevents\",\n            \"dcrImmutableId\": \"dcr-ad15ceef43b542ed912f8923cb4f6d04\"\n        },\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-deviceregistryevents\",\n            \"dcrImmutableId\": \"dcr-b3ad9f96fd72438aa9c12890323a799e\"\n        },\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-emailattachmentinfo\",\n            \"dcrImmutableId\": \"dcr-68b121ba139a4e93bf97e8ba1332f8fc\"\n        },\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-emailevents\",\n            \"dcrImmutableId\": \"dcr-0cab37efab5f4a8fa626baf083a7370d\"\n        },\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-emailurlinfo\",\n            \"dcrImmutableId\": \"dcr-0bce2872c6074a9f9c42940c2d2821e5\"\n        },\n        {\n            \"dcrName\": \"dcr-m365-archive-basic-logs-identitylogonevents\",\n            \"dcrImmutableId\": \"dcr-ce97a64fb7f64dc4af5e9f3d49392924\"\n        }\n    ]\n}"
+                                        "value": "[concat( '{ \"content\": [ { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'alertevidence', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'alertevidence')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'alertinfo', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'alertinfo')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'cloudappevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'cloudappevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'deviceevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'deviceevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'devicefilecertificateinfo', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'devicefilecertificateinfo')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'devicefileevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'devicefileevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'deviceimageloadevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'deviceimageloadevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'deviceinfo', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'deviceinfo')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'devicelogonevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'devicelogonevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'devicenetworkevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'devicenetworkevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'devicenetworkinfo', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'devicenetworkinfo')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'deviceprocessevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'deviceprocessevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'deviceregistryevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'deviceregistryevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'emailattachmentinfo', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'emailattachmentinfo')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'emailevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'emailevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'emailurlinfo', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'emailurlinfo')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'identitylogonevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'identitylogonevents')), '2021-04-01', 'full').properties.immutableId, '\" } ] }')]"
                                     }
                                 ]
-                            }
-                        },
-                        "Initialize_'day'_variable": {
+                            },
                             "runAfter": {
-                                "Initialize_'month'_variable": [
+                                "Initialize_'customTableSuffix'_variable": [
                                     "Succeeded"
                                 ]
                             },
-                            "type": "InitializeVariable",
+                            "type": "InitializeVariable"
+                        },
+                        "Initialize_'day'_variable": {
                             "inputs": {
                                 "variables": [
                                     {
@@ -3544,32 +3450,49 @@
                                         "value": "@{formatDateTime(addDays(utcNow(), -1), 'dd')}"
                                     }
                                 ]
-                            }
-                        },
-                        "Initialize_'dceUri'_variable": {
+                            },
                             "runAfter": {
-                                "Initialize_'day'_variable": [
+                                "Initialize_'month'_variable": [
                                     "Succeeded"
                                 ]
                             },
-                            "type": "InitializeVariable",
+                            "type": "InitializeVariable"
+                        },
+                        "Initialize_'dceUri'_variable": {
                             "inputs": {
                                 "variables": [
                                     {
                                         "name": "dceUri",
                                         "type": "string",
-                                        "value": "https://dce-m365-archive-basic-logs-p9jh.westeurope-1.ingest.monitor.azure.com"
+                                        "value": "[reference(resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName')), '2021-04-01', 'full').properties.logsIngestion.endpoint]"
                                     }
                                 ]
-                            }
-                        },
-                        "Initialize_'month'_variable": {
+                            },
                             "runAfter": {
-                                "Initialize_'year'_variable": [
+                                "Initialize_'day'_variable": [
                                     "Succeeded"
                                 ]
                             },
-                            "type": "InitializeVariable",
+                            "type": "InitializeVariable"
+                        },
+                        "Initialize_'dcrPrefix'_variable": {
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "dcrPrefix",
+                                        "type": "string",
+                                        "value": "[parameters('solutionName')]"
+                                    }
+                                ]
+                            },
+                            "runAfter": {
+                                "Initialize_'dceUri'_variable": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable"
+                        },
+                        "Initialize_'month'_variable": {
                             "inputs": {
                                 "variables": [
                                     {
@@ -3578,28 +3501,45 @@
                                         "value": "@{formatDateTime(addDays(utcNow(), -1), 'MM')}"
                                     }
                                 ]
-                            }
+                            },
+                            "runAfter": {
+                                "Initialize_'year'_variable": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable"
+                        },
+                        "Initialize_'storageAccountName'_variable": {
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "storageAccountName",
+                                        "type": "string",
+                                        "value": "[parameters('storageAccountName')]"
+                                    }
+                                ]
+                            },
+                            "runAfter": {},
+                            "type": "InitializeVariable"
                         },
                         "Initialize_'tenantId'_variable": {
-                            "runAfter": {},
-                            "type": "InitializeVariable",
                             "inputs": {
                                 "variables": [
                                     {
                                         "name": "tenantId",
                                         "type": "string",
-                                        "value": "da2d1fdd-f4f7-4483-960e-9742e3742ef4"
+                                        "value": "[tenant().tenantId]"
                                     }
                                 ]
-                            }
-                        },
-                        "Initialize_'year'_variable": {
+                            },
                             "runAfter": {
-                                "Initialize_'tenantId'_variable": [
+                                "Initialize_'storageAccountName'_variable": [
                                     "Succeeded"
                                 ]
                             },
-                            "type": "InitializeVariable",
+                            "type": "InitializeVariable"
+                        },
+                        "Initialize_'year'_variable": {
                             "inputs": {
                                 "variables": [
                                     {
@@ -3608,15 +3548,15 @@
                                         "value": "@{formatDateTime(addDays(utcNow(), -1), 'yyyy')}"
                                     }
                                 ]
-                            }
-                        },
-                        "Lists_blobs_in_the_root_folder": {
+                            },
                             "runAfter": {
-                                "Parse_dataCollectionRules": [
+                                "Initialize_'tenantId'_variable": [
                                     "Succeeded"
                                 ]
                             },
-                            "type": "ApiConnection",
+                            "type": "InitializeVariable"
+                        },
+                        "Lists_blobs_in_the_root_folder": {
                             "inputs": {
                                 "host": {
                                     "connection": {
@@ -3624,20 +3564,20 @@
                                     }
                                 },
                                 "method": "get",
-                                "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('sqndefender365archive'))}/foldersV2",
+                                "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent(variables('storageAccountName')))}/foldersV2",
                                 "queries": {
                                     "nextPageMarker": "",
                                     "useFlatListing": false
                                 }
-                            }
-                        },
-                        "Parse_dataCollectionRules": {
+                            },
                             "runAfter": {
-                                "Initialize_'dataCollectionRules'_variable": [
+                                "Parse_dataCollectionRules": [
                                     "Succeeded"
                                 ]
                             },
-                            "type": "ParseJson",
+                            "type": "ApiConnection"
+                        },
+                        "Parse_dataCollectionRules": {
                             "inputs": {
                                 "content": "@variables('dataCollectionRules')",
                                 "schema": {
@@ -3657,28 +3597,85 @@
                                         }
                                     }
                                 }
-                            }
+                            },
+                            "runAfter": {
+                                "Initialize_'dataCollectionRules'_variable": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ParseJson"
                         }
                     },
-                    "outputs": {}
+                    "contentVersion": "1.0.0.0",
+                    "outputs": {},
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "Daily_at_01:00_UTC+1": {
+                            "evaluatedRecurrence": {
+                                "frequency": "Day",
+                                "interval": 1,
+                                "startTime": "2022-03-21T01:00:00Z",
+                                "timeZone": "W. Europe Standard Time"
+                            },
+                            "recurrence": {
+                                "frequency": "Day",
+                                "interval": 1,
+                                "startTime": "2022-03-21T01:00:00Z",
+                                "timeZone": "W. Europe Standard Time"
+                            },
+                            "type": "Recurrence"
+                        }
+                    }
                 },
                 "parameters": {
                     "$connections": {
                         "value": {
                             "azureblob": {
-                                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('connections_azureblob_name'))]",
+                                "connectionId": "[resourceId('Microsoft.Web/connections', variables('logicAppConnectionName'))]",
                                 "connectionName": "azureblob",
                                 "connectionProperties": {
                                     "authentication": {
                                         "type": "ManagedServiceIdentity"
                                     }
                                 },
-                                "id": "/subscriptions/b4824877-0da7-4d92-80e5-e186f01b0653/providers/Microsoft.Web/locations/westeurope/managedApis/azureblob"
+                                "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/azureblob')]"
                             }
                         }
                     }
                 }
             }
+        },
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2020-10-01-preview",
+            "name": "[guid(concat(variables('logicAppName'), '/', string(copyIndex())))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Logic/workflows', variables('logicAppName'))]"
+            ],
+            "copy": {
+                "name": "rbacCopy",
+                "count": "[length(parameters('roleDefinitions'))]"
+            },
+            "properties": {
+                "principalType": "ServicePrincipal",
+                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', parameters('roleDefinitions')[copyIndex()])]",
+                "principalId": "[reference(resourceId('Microsoft.Logic/workflows', variables('logicAppName')), '2016-10-01', 'full').identity.principalId]"
+            }
         }
-    ]
+    ],
+    "outputs": {
+        "tenantId": {
+            "type": "string",
+            "value": "[tenant().tenantId]"
+        },
+        "immutableIds": {
+            "type": "string",
+            "value": "[concat( '{ \"content\": [ { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'alertevidence', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'alertevidence')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'alertinfo', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'alertinfo')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'cloudappevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'cloudappevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'deviceevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'deviceevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'devicefilecertificateinfo', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'devicefilecertificateinfo')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'devicefileevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'devicefileevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'deviceimageloadevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'deviceimageloadevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'deviceinfo', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'deviceinfo')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'devicelogonevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'devicelogonevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'devicenetworkevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'devicenetworkevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'devicenetworkinfo', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'devicenetworkinfo')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'deviceprocessevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'deviceprocessevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'deviceregistryevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'deviceregistryevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'emailattachmentinfo', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'emailattachmentinfo')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'emailevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'emailevents')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'emailurlinfo', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'emailurlinfo')), '2021-04-01', 'full').properties.immutableId, '\" }, { \"dcrName\": \"', variables('dataCollectionRulePrefix'), 'identitylogonevents', '\", \"dcrImmutableId\": \"', reference(resourceId('Microsoft.Insights/dataCollectionRules', concat(variables('dataCollectionRulePrefix'), 'identitylogonevents')), '2021-04-01', 'full').properties.immutableId, '\" } ] }')]"
+        }
+    }
 }
