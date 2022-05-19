@@ -29,7 +29,7 @@ __Read the ful article by following the links below:__
 
 __Part 1:__ https://medium.com/wortell/use-sentinel-basic-and-archive-logs-fae3bb3a6299
 
-__Part 2:__ https://medium.com/wortell/use-sentinel-basic-and-archive-logs-fae3bb3a6299
+__Part 2:__ https://medium.com/@koosg/archive-microsoft-365-defender-logs-de531161dc25
 
 <br>
 
