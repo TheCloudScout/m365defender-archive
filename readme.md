@@ -50,6 +50,14 @@ __Part 2:__ https://medium.com/wortell/use-sentinel-basic-and-archive-logs-fae3b
 
 This automated deployment will deploy the Logic App, together with all of the other required resources, as it was used in all the examples in the article.
 
+__To deploy this set of resources, click the button below:__
+
+<br>
+
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FTheCloudScout%2Fm365defender-archive%2Fmain%2Farchive-m365defender-to-basic-logs.template.json)
+
+<br>
+
 The template will deploy the following resources:
 
 | Resource Type | Details |
@@ -64,11 +72,5 @@ The template will deploy the following resources:
 | Microsoft.Web/connections | Logic App Connector to communicate with the Storage Account via system-assigned Managed Identity. |
 | Microsoft.Logic/workflows | The Logic App workflow where als retrieval, parsing, and sending of data will take place every day at 02:00 CET. |
 | Microsoft.Authorization/roleAssignments | The system-assigned Managed Identity from the Logic App need to be granted two specific RBAC roles to retrieve data from the Storage Account and send data to the Data Collection Endpoint. |
-
-__To deploy this set of resources, click the button below:__
-
-<br>
-
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FTheCloudScout%2Fm365defender-archive%2Fmain%2Farchive-m365defender-to-basic-logs.template.json)
 
 <br>
