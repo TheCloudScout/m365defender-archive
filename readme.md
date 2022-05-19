@@ -69,6 +69,6 @@ __To deploy this set of resources, click the button below:__
 
 <br>
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FTheCloudScout%2Fincident-enrich-virustotal%2Fmain%2Flogicapp-enrich-incident-virustotal.template.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FTheCloudScout%2Fm365defender-archive%2Fmain%2Farchive-m365defender-to-basic-logs.template.json)
 
 <br>
