@@ -4,11 +4,17 @@
     "parameters": {
         "solutionName": {
             "defaultValue": "m365defender-archive",
-            "type": "String"
+            "type": "String",
+            "metadata": {
+                "description": "This will be used as suffix for all resources."
+            }
         },
         "storageAccountName": {
             "defaultValue": "storagem365darchive",
-            "type": "String"
+            "type": "String",
+            "metadata": {
+                "description": "Blob storage where Microsoft 365 Defender streaming API will (temporary) store all events."
+            }
         }
     },
     "variables": {
@@ -21,7 +27,7 @@
         "logicAppConnectionName": "[concat('api-connection-', parameters('solutionName'), '-azureblob')]",
         "roleDefinitions": [
             "3913510d-42f4-4e42-8a64-420c390055eb", // Monitoring Metrics Publisher
-            "ba92f5b4-2d11-453d-a403-e96b0029c9fe"  // Storage Blob Data Contributor
+            "ba92f5b4-2d11-453d-a403-e96b0029c9fe" // Storage Blob Data Contributor
         ]
     },
     "resources": [
