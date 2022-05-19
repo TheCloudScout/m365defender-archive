@@ -9,13 +9,6 @@
         "storageAccountName": {
             "defaultValue": "storagem365darchive",
             "type": "String"
-        },
-        "roleDefinitions": {
-            "type": "array",
-            "defaultValue": [
-                "3913510d-42f4-4e42-8a64-420c390055eb", // Monitoring Metrics Publisher
-                "ba92f5b4-2d11-453d-a403-e96b0029c9fe" // Storage Blob Data Contributor
-            ]
         }
     },
     "variables": {
@@ -23,9 +16,13 @@
         "integrationAccountName": "[concat('integration-account-', parameters('solutionName'))]",
         "dataCollectionEndpointName": "[concat('dce-', parameters('solutionName'))]",
         "dataCollectionRulePrefix": "[concat('dcr-', parameters('solutionName'), '-')]",
-        "uniqueDestinationString": "[substring(concat(uniqueString(string(subscription().subscriptionId)), uniqueString(parameters('solutionName')), uniqueString(variables('dataCollectionEndpointName'))), 0, 32)]",     
+        "uniqueDestinationString": "[substring(concat(uniqueString(string(subscription().subscriptionId)), uniqueString(parameters('solutionName')), uniqueString(variables('dataCollectionEndpointName'))), 0, 32)]",
         "logicAppName": "[concat('logicapp-', parameters('solutionName'))]",
-        "logicAppConnectionName": "[concat('api-connection-', parameters('solutionName'), '-azureblob')]"
+        "logicAppConnectionName": "[concat('api-connection-', parameters('solutionName'), '-azureblob')]",
+        "roleDefinitions": [
+            "3913510d-42f4-4e42-8a64-420c390055eb", // Monitoring Metrics Publisher
+            "ba92f5b4-2d11-453d-a403-e96b0029c9fe"  // Storage Blob Data Contributor
+        ]
     },
     "resources": [
         {
@@ -2640,9 +2637,6 @@
             "name": "[variables('dataCollectionEndpointName')]",
             "location": "[resourceGroup().location]",
             "properties": {
-                "immutableId": "dce-7dfe1310af88456a8a1cf7b895e9b74a",
-                "configurationAccess": {},
-                "logsIngestion": {},
                 "networkAcls": {
                     "publicNetworkAccess": "Enabled"
                 }
@@ -2650,14 +2644,157 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'alertevidence')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-alertevidence_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "AccountDomain",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "AccountName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "AccountObjectId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "AccountSid",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "AccountUpn",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "AdditionalFields",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AlertId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Application",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ApplicationId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "DeviceId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "EmailSubject",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "EntityType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "EvidenceDirection",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "EvidenceRole",
+                                "type": "string"
+                            },
+                            {
+                                "name": "FileName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "FileSize",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "FolderPath",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "LocalIP",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "MachineGroup",
+                                "type": "string"
+                            },
+                            {
+                                "name": "NetworkMessageId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "OAuthApplicationId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ProcessCommandLine",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RegistryKey",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RegistryValueData",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RegistryValueName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RemoteIP",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RemoteUrl",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ServiceSource",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SHA1",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "SHA256",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ThreatFamily",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -2682,14 +2819,61 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'alertinfo')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-alertinfo_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "AlertId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AttackTechniques",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Category",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DetectionSource",
+                                "type": "string"
+                            },
+                            {
+                                "name": "MachineGroup",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ServiceSource",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Severity",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "Title",
+                                "type": "string"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -2714,14 +2898,149 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'cloudappevents')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-cloudappevents_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "AccountDisplayName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AccountId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AccountObjectId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "AccountType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ActionType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ActivityObjects",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ActivityType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AdditionalFields",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "AppInstanceId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "Application",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "ApplicationId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "City",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "CountryCode",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "DeviceType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "IPAddress",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "IPCategory",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "IPTags",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "IsAdminOperation",
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "IsAnonymousProxy",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "IsExternalUser",
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "IsImpersonated",
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "ISP",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ObjectId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ObjectName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ObjectType",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "OSPlatform",
+                                "type": "string"
+                            },
+                            {
+                                "name": "RawEventData",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ReportId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "UserAgent",
+                                "type": "string"
+                            },
+                            {
+                                "name": "UserAgentTags",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -2746,14 +3065,253 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'deviceevents')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-deviceevents_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "AccountDomain",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "AccountName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "AccountSid",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ActionType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AdditionalFields",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AppGuardContainerId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "FileName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "FileOriginIP",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "FileOriginUrl",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "FileSize",
+                                "type": "int"
+                            },
+                            {
+                                "name": "FolderPath",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountDomain",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountObjectId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountSid",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountUpn",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessCommandLine",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessCreationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessFileSize",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessFolderPath",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessLogonId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessMD5",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessParentCreationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessParentFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessParentId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessSHA1",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessSHA256",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoCompanyName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoFileDescription",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoInternalFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoOriginalFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoProductName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoProductVersion",
+                                "type": "string"
+                            },
+                            {
+                                "name": "LocalIP",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "LocalPort",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "LogonId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "MachineGroup",
+                                "type": "string"
+                            },
+                            {
+                                "name": "MD5",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ProcessCommandLine",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ProcessCreationTime",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ProcessId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ProcessTokenElevation",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RegistryKey",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RegistryValueData",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RegistryValueName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RemoteDeviceName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RemoteIP",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RemotePort",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RemoteUrl",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ReportId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "SHA1",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "SHA256",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -2778,14 +3336,101 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'devicefilecertificateinfo')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-devicefilecertificateinfo_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "CertificateCountersignatureTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "CertificateCreationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "CertificateExpirationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "CertificateSerialNumber",
+                                "type": "string"
+                            },
+                            {
+                                "name": "CrlDistributionPointUrls",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "IsRootSignerMicrosoft",
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "IsSigned",
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "Issuer",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "IssuerHash",
+                                "type": "string"
+                            },
+                            {
+                                "name": "IsTrusted",
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "MachineGroup",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ReportId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "SHA1",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SignatureType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Signer",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SignerHash",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -2810,14 +3455,241 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'devicefileevents')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-devicefileevents_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "ActionType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AdditionalFields",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "AppGuardContainerId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "FileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "FileOriginIP",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "FileOriginReferrerUrl",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "FileOriginUrl",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "FileSize",
+                                "type": "int"
+                            },
+                            {
+                                "name": "FolderPath",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountDomain",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountObjectId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountSid",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountUpn",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessCommandLine",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessCreationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessFileSize",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessFolderPath",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessIntegrityLevel",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessMD5",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessParentCreationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessParentFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessParentId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessSHA1",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessSHA256",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessTokenElevation",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoCompanyName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoFileDescription",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoInternalFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoOriginalFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoProductName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoProductVersion",
+                                "type": "string"
+                            },
+                            {
+                                "name": "IsAzureInfoProtectionApplied",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "MachineGroup",
+                                "type": "string"
+                            },
+                            {
+                                "name": "MD5",
+                                "type": "string"
+                            },
+                            {
+                                "name": "PreviousFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "PreviousFolderPath",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ReportId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "RequestAccountDomain",
+                                "type": "string"
+                            },
+                            {
+                                "name": "RequestAccountName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "RequestAccountSid",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "RequestProtocol",
+                                "type": "string"
+                            },
+                            {
+                                "name": "RequestSourceIP",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RequestSourcePort",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "SensitivityLabel",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "SensitivitySubLabel",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "SHA1",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SHA256",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ShareName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -2842,14 +3714,177 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'deviceimageloadevents')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-deviceimageloadevents_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "ActionType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AppGuardContainerId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "FileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "FileSize",
+                                "type": "int"
+                            },
+                            {
+                                "name": "FolderPath",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountDomain",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountObjectId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountSid",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountUpn",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessCommandLine",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessCreationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessFileSize",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessFolderPath",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessIntegrityLevel",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessMD5",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessParentCreationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessParentFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessParentId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessSHA1",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessSHA256",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessTokenElevation",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoCompanyName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoFileDescription",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoInternalFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoOriginalFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoProductName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoProductVersion",
+                                "type": "string"
+                            },
+                            {
+                                "name": "MachineGroup",
+                                "type": "string"
+                            },
+                            {
+                                "name": "MD5",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ReportId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "SHA1",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SHA256",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -2874,14 +3909,101 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'deviceinfo')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-deviceinfo_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "AadDeviceId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AdditionalFields",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ClientVersion",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceObjectId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "IsAzureADJoined",
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "JoinType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "LoggedOnUsers",
+                                "type": "string"
+                            },
+                            {
+                                "name": "MachineGroup",
+                                "type": "string"
+                            },
+                            {
+                                "name": "OnboardingStatus",
+                                "type": "string"
+                            },
+                            {
+                                "name": "OSArchitecture",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "OSBuild",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "OSPlatform",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "OSVersion",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "PublicIP",
+                                "type": "string"
+                            },
+                            {
+                                "name": "RegistryDeviceTag",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ReportId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -2906,14 +4028,205 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'devicelogonevents')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-devicelogonevents_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "AccountDomain",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AccountName",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "AccountSid",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ActionType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AdditionalFields",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AppGuardContainerId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "FailureReason",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountDomain",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountObjectId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountSid",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountUpn",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessCommandLine",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessCreationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessFileSize",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessFolderPath",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessIntegrityLevel",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessMD5",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessParentCreationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessParentFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessParentId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessSHA1",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessSHA256",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessTokenElevation",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoCompanyName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoFileDescription",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoInternalFileName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoOriginalFileName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoProductName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoProductVersion",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "IsLocalAdmin",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "LogonId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "LogonType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "MachineGroup",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Protocol",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RemoteDeviceName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RemoteIP",
+                                "type": "string"
+                            },
+                            {
+                                "name": "RemoteIPType",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RemotePort",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ReportId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -2938,14 +4251,189 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'devicenetworkevents')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-devicenetworkevents_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "ActionType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AdditionalFields",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "AppGuardContainerId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountDomain",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountObjectId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountSid",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountUpn",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessCommandLine",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessCreationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessFileSize",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessFolderPath",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessIntegrityLevel",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessMD5",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessParentCreationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessParentFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessParentId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessSHA1",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessSHA256",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessTokenElevation",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoCompanyName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoFileDescription",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoInternalFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoOriginalFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoProductName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoProductVersion",
+                                "type": "string"
+                            },
+                            {
+                                "name": "LocalIP",
+                                "type": "string"
+                            },
+                            {
+                                "name": "LocalIPType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "LocalPort",
+                                "type": "int"
+                            },
+                            {
+                                "name": "MachineGroup",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Protocol",
+                                "type": "string"
+                            },
+                            {
+                                "name": "RemoteIP",
+                                "type": "string"
+                            },
+                            {
+                                "name": "RemoteIPType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "RemotePort",
+                                "type": "int"
+                            },
+                            {
+                                "name": "RemoteUrl",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ReportId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -2970,14 +4458,89 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'devicenetworkinfo')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-devicenetworkinfo_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "ConnectedNetworks",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DefaultGateways",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DnsAddresses",
+                                "type": "string"
+                            },
+                            {
+                                "name": "IPAddresses",
+                                "type": "string"
+                            },
+                            {
+                                "name": "IPv4Dhcp",
+                                "type": "string"
+                            },
+                            {
+                                "name": "IPv6Dhcp",
+                                "type": "string"
+                            },
+                            {
+                                "name": "MacAddress",
+                                "type": "string"
+                            },
+                            {
+                                "name": "MachineGroup",
+                                "type": "string"
+                            },
+                            {
+                                "name": "NetworkAdapterName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "NetworkAdapterStatus",
+                                "type": "string"
+                            },
+                            {
+                                "name": "NetworkAdapterType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ReportId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "TunnelType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -3002,14 +4565,261 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'deviceprocessevents')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-deviceprocessevents_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "AccountDomain",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AccountName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AccountObjectId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "AccountSid",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "AccountUpn",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ActionType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AdditionalFields",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "AppGuardContainerId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "FileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "FileSize",
+                                "type": "int"
+                            },
+                            {
+                                "name": "FolderPath",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountDomain",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountObjectId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountSid",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountUpn",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessCommandLine",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessCreationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessFileSize",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessFolderPath",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessIntegrityLevel",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessLogonId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessMD5",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessParentCreationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessParentFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessParentId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessSHA1",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessSHA256",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessSignatureStatus",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessSignerType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessTokenElevation",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoCompanyName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoFileDescription",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoInternalFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoOriginalFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoProductName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoProductVersion",
+                                "type": "string"
+                            },
+                            {
+                                "name": "LogonId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "MachineGroup",
+                                "type": "string"
+                            },
+                            {
+                                "name": "MD5",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ProcessCommandLine",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ProcessCreationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "ProcessId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "ProcessIntegrityLevel",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ProcessTokenElevation",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ProcessVersionInfoCompanyName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ProcessVersionInfoFileDescription",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ProcessVersionInfoInternalFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ProcessVersionInfoOriginalFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ProcessVersionInfoProductName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ProcessVersionInfoProductVersion",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ReportId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "SHA1",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SHA256",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -3034,14 +4844,181 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'deviceregistryevents')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-deviceregistryevents_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "ActionType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AppGuardContainerId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeviceName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountDomain",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountObjectId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountSid",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessAccountUpn",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "InitiatingProcessCommandLine",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessCreationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessFileSize",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessFolderPath",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessIntegrityLevel",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessMD5",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessParentCreationTime",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "InitiatingProcessParentFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessParentId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "InitiatingProcessSHA1",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessSHA256",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessTokenElevation",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoCompanyName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoFileDescription",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoInternalFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoOriginalFileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoProductName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiatingProcessVersionInfoProductVersion",
+                                "type": "string"
+                            },
+                            {
+                                "name": "MachineGroup",
+                                "type": "string"
+                            },
+                            {
+                                "name": "PreviousRegistryKey",
+                                "type": "string"
+                            },
+                            {
+                                "name": "PreviousRegistryValueData",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "PreviousRegistryValueName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RegistryKey",
+                                "type": "string"
+                            },
+                            {
+                                "name": "RegistryValueData",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RegistryValueName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RegistryValueType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ReportId",
+                                "type": "int"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -3066,14 +5043,85 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'emailattachmentinfo')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-emailattachmentinfo_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "DetectionMethods",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "FileName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "FileSize",
+                                "type": "int"
+                            },
+                            {
+                                "name": "FileType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "NetworkMessageId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "RecipientEmailAddress",
+                                "type": "string"
+                            },
+                            {
+                                "name": "RecipientObjectId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ReportId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SenderDisplayName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "SenderFromAddress",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SenderObjectId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "SHA256",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ThreatNames",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ThreatTypes",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -3098,14 +5146,169 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'emailevents')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-emailevents_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "AdditionalFields",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "AttachmentCount",
+                                "type": "int"
+                            },
+                            {
+                                "name": "AuthenticationDetails",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ConfidenceLevel",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "Connectors",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "DeliveryAction",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DeliveryLocation",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DetectionMethods",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "EmailAction",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "EmailActionPolicy",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "EmailActionPolicyGuid",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "EmailClusterId",
+                                "type": "long"
+                            },
+                            {
+                                "name": "EmailDirection",
+                                "type": "string"
+                            },
+                            {
+                                "name": "EmailLanguage",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InternetMessageId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "NetworkMessageId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "OrgLevelAction",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "OrgLevelPolicy",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "RecipientEmailAddress",
+                                "type": "string"
+                            },
+                            {
+                                "name": "RecipientObjectId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ReportId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SenderDisplayName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SenderFromAddress",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SenderFromDomain",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SenderIPv4",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SenderIPv6",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "SenderMailFromAddress",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SenderMailFromDomain",
+                                "type": "string"
+                            },
+                            {
+                                "name": "SenderObjectId",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "Subject",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ThreatNames",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ThreatTypes",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "UrlCount",
+                                "type": "int"
+                            },
+                            {
+                                "name": "UserLevelAction",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "UserLevelPolicy",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -3130,14 +5333,49 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'emailurlinfo')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-emailurlinfo_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "NetworkMessageId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ReportId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "Url",
+                                "type": "string"
+                            },
+                            {
+                                "name": "UrlDomain",
+                                "type": "string"
+                            },
+                            {
+                                "name": "UrlLocation",
+                                "type": "string"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -3162,14 +5400,129 @@
         },
         {
             "type": "Microsoft.Insights/dataCollectionRules",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-09-01-preview",
             "name": "[concat(variables('dataCollectionRulePrefix'), 'identitylogonevents')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
             ],
             "properties": {
-                "dataSources": {},
+                "dataCollectionEndpointId": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]",
+                "streamDeclarations": {
+                    "Custom-identitylogonevents_archive_CL": {
+                        "columns": [
+                            {
+                                "name": "AccountDisplayName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AccountDomain",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AccountName",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AccountObjectId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AccountSid",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "AccountUpn",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ActionType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "AdditionalFields",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "Application",
+                                "type": "string"
+                            },
+                            {
+                                "name": "DestinationDeviceName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "DestinationIPAddress",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "DestinationPort",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "DeviceName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "DeviceType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "FailureReason",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "IPAddress",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ISP",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Location",
+                                "type": "string"
+                            },
+                            {
+                                "name": "LogonType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "OSPlatform",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "Port",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "Protocol",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "ReportId",
+                                "type": "string"
+                            },
+                            {
+                                "name": "TargetAccountDisplayName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "TargetDeviceName",
+                                "type": "dynamic"
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            }
+                        ]
+                    }
+                },
                 "destinations": {
                     "logAnalytics": [
                         {
@@ -3659,11 +6012,11 @@
             ],
             "copy": {
                 "name": "rbacCopy",
-                "count": "[length(parameters('roleDefinitions'))]"
+                "count": "[length(variables('roleDefinitions'))]"
             },
             "properties": {
                 "principalType": "ServicePrincipal",
-                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', parameters('roleDefinitions')[copyIndex()])]",
+                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('roleDefinitions')[copyIndex()])]",
                 "principalId": "[reference(resourceId('Microsoft.Logic/workflows', variables('logicAppName')), '2016-10-01', 'full').identity.principalId]"
             }
         }
@@ -3672,6 +6025,10 @@
         "tenantId": {
             "type": "string",
             "value": "[tenant().tenantId]"
+        },
+        "dataCollectionEndpointId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dataCollectionEndpointName'))]"
         },
         "immutableIds": {
             "type": "string",
